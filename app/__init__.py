@@ -1,26 +1,38 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session
+from .config import Config
 
-# SQLAlchemy 객체 생성 (DB 연결용)
-db = SQLAlchemy()
+# SQLAlchemy 기본 세팅
+engine = create_engine(
+    Config.SQLALCHEMY_DATABASE_URI,
+    echo=True,  # SQL 실행 로그 출력 (교육용)
+    connect_args={"check_same_thread": False}  # SQLite에서 다중 스레드 허용
+)
+
+# 세션 (DB와의 연결 담당)
+SessionLocal = scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=False))
+
+# Base 클래스 (모든 모델은 이걸 상속받음)
+Base = declarative_base()
 
 def create_app():
-    """Flask 앱 생성 + 설정 + 블루프린트 등록"""
+    """Flask 앱 생성 및 초기화"""
     app = Flask(__name__)
 
-    # SQLite 데이터베이스 설정
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reviews.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # 모델 import
+    from . import models
 
-    # DB 초기화
-    db.init_app(app)
+    # 테이블 생성 (없으면 자동 생성)
+    Base.metadata.create_all(bind=engine)
 
-    # 블루프린트 등록
-    from .routes import main
-    app.register_blueprint(main)
+    # 라우트 블루프린트 등록
+    from .routes.review_routes import review_bp
+    app.register_blueprint(review_bp)
 
-    # 앱 컨텍스트 안에서 DB 테이블 생성
-    with app.app_context():
-        db.create_all()
+    # 요청이 끝날 때마다 세션 정리
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        SessionLocal.remove()
 
     return app

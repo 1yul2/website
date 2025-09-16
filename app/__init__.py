@@ -6,8 +6,8 @@ from .config import Config
 # SQLAlchemy 기본 세팅
 engine = create_engine(
     Config.SQLALCHEMY_DATABASE_URI,
-    echo=True,  # SQL 실행 로그 출력 (교육용)
-    connect_args={"check_same_thread": False}  # SQLite에서 다중 스레드 허용
+    echo=True,
+    connect_args=Config.CONNECT_ARGS
 )
 
 # 세션 (DB와의 연결 담당)

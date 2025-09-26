@@ -1,13 +1,14 @@
+# app/config.py
+
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class Config:
-    TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL")
-    TURSO_AUTH_TOKEN = os.getenv("TURSO_AUTH_TOKEN")
-
-    if TURSO_DATABASE_URL and TURSO_AUTH_TOKEN:
+    TURSO_DATABASE_URL = os.getenv("libsql://website-vercel-icfg-8qmprzynzfmsmpmasfameaql.aws-us-east-1.turso.io")
+    TURSO_AUTH_TOKEN = os.getenv("eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTg4Njk0OTIsImlkIjoiYjAwNTZlNDYtNGEwYy00NTBiLTlhZWUtZTJkMmQ2YTI0N2RjIiwicmlkIjoiNzQwNDQ3Y2MtOTYzYi00MWExLWE2ODgtODVmNmJiOGU2ZWRjIn0.DqkGaFAAvQDePfM91UQ5BOHXGLeXedChiSEQvxHe_xyDgxyYEUuM6PykiLaIDMXM_qrYnxFoQwVb1f23USA4AA")
+    if not TURSO_DATABASE_URL and not TURSO_AUTH_TOKEN:
         # .env에 값이 있을 시에만 Turso를 사용하도록 설정
         SQLALCHEMY_DATABASE_URI = f"sqlite+{TURSO_DATABASE_URL}?secure=true"
         CONNECT_ARGS = {"auth_token": TURSO_AUTH_TOKEN}
